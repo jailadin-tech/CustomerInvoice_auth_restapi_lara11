@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Filter\V1\CustomerQueryFilter;
+use App\Helper\Api\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Http\Requests\StoreCustomerRequest;
@@ -46,7 +47,15 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
-        //
+        try {
+            $customer = Customer::create($request->all());
+            if ($customer) {
+                return new CustomerResource($customer);
+            }
+            return ResponseHelper::error(message: "Failed to insert data ", statusCode: 400);
+        } catch (\Throwable $th) {
+            return ResponseHelper::error(message: "Failed to insert data due to some exception : " . $th->getMessage(),  statusCode: 400);
+        }
     }
 
     /**
@@ -76,7 +85,15 @@ class CustomerController extends Controller
      */
     public function update(UpdateCustomerRequest $request, Customer $customer)
     {
-        //
+        try {
+
+            if ($customer->update($request->all())) {
+                return new CustomerResource($customer);
+            }
+            return ResponseHelper::error(message: "Failed to Update data ", statusCode: 400);
+        } catch (\Throwable $th) {
+            return ResponseHelper::error(message: "Failed to Update data due to some exception : " . $th->getMessage(),  statusCode: 400);
+        }
     }
 
     /**
