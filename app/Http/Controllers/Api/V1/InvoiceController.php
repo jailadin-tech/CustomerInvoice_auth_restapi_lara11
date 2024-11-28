@@ -2,21 +2,31 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Filter\V1\InvoiceQueryFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Http\Resources\V1\InvoiceCollection;
 use App\Http\Resources\V1\InvoiceResource;
+use Illuminate\Http\Request;
 
 class InvoiceController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return new InvoiceCollection(Invoice::paginate());
+        $filterItems = new InvoiceQueryFilter();
+        $queryItems = $filterItems->transform($request); // O/p: [['name','=','jai'],['amount','>','100']]
+        if (count($queryItems) == 0) {
+            return new InvoiceCollection(Invoice::paginate());
+        } else {
+            $customers = Invoice::where($queryItems)->paginate();
+            // Appending query params to pagination url ( V1/invoices?page=17 append changes to V1/invoices?name[eq]=jai&page=17)
+            return new InvoiceCollection($customers->appends($request->query()));
+        }
     }
 
     /**

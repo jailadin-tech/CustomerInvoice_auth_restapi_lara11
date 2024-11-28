@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Filter\V1\CustomerQuery;
+use App\Filter\V1\CustomerQueryFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Http\Requests\StoreCustomerRequest;
@@ -19,23 +19,17 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        $filterItems = new CustomerQuery();
+        $filterItems = new CustomerQueryFilter();
         $queryItems = $filterItems->transform($request); // O/p: [['name','=','jai'],['amount','>','100']]
-        //dd($queryItems);
         if (count($queryItems) == 0) {
             return new CustomerCollection(Customer::paginate());
         } else {
-            $query = Customer::where($queryItems);
-            /*  Query debug
-                // Get the raw SQL with placeholders
-                $sql = $query->toSql();
-                // Get the bound values
-                $bindings = $query->getBindings();
+            $customers = Customer::where($queryItems)->paginate();
+            /*  Query debugging
+                $query = Customer::where($queryItems);
                 // Output the query and the bindings
-                dd(vsprintf(str_replace('?', '%s', $sql), $bindings)); 
-            */
-            return new CustomerCollection($query->paginate());
-            ///return new CustomerCollection(Customer::where($queryItems)->paginate());
+                dd(vsprintf(str_replace('?', '%s', $query->toSql()), $query->getBindings();)); */
+            return new CustomerCollection($customers->appends($request->query())); // appending query param to pagination url
         }
     }
 

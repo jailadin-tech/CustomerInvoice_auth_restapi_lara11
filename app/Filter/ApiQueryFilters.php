@@ -1,34 +1,31 @@
 <?php
 
-namespace App\Filter\V1;
+namespace App\Filter;
 
 use Illuminate\Http\Request;
 
-class CustomerQuery
+/**
+ * Class: Custom Class for filtering the records of  model with given  filters
+ */
+class ApiQueryFilters
 {
-    protected $safeparms = [
-        'name' => ['eq'],
-        'type' => ['eq'],
-        'email' => ['eq'],
-        'address' => ['eq'],
-        'city' => ['eq'],
-        'state' => ['eq'],
-        'postalCode' => ['eq', 'lt', 'gt'],
-    ];
+    /**
+     * Attribute : Allowed columns and operators(>,= ...etc) for query
+     */
+    protected $safeparms = [];
+    /**
+     * Attribute : Manipulated column names mapping to actual column name for query
+     */
+    protected $columnMap = [];
+    /**
+     * Attribute : Mapping query operator short name to actual entity symbol ex: [eq => =, lt => <]
+     */
+    protected $operatorMap = [];
 
-    protected $columnMap = [
-        'postalCode' => 'postal_code'
-    ];
-
-    protected $operatorMap = [
-        'eq' => '=',
-        'lt' => '<',
-        'lte' => '<=',
-        'gt' => '>',
-        'gte' => '>=',
-        'in' => 'in'
-    ];
-
+    /**
+     * Function : Generate the query filter array based on the allowed columns and query params
+     * @return array QueryFiler Array like [['name','=','jai'],['amount','>','100']]
+     */
     public function transform(Request $request): array
     {
         $eloQuery = [];
