@@ -27,6 +27,7 @@ class CustomerController extends Controller
         $includeReleated = $request->query('includeData');
         if ($includeReleated == "invoices") {
             // set eagarLoad to invoices, to load the invoices relation ship on customer model 
+            dd($customers->with('invoices'));
             $customers = $customers->with('invoices');
         }
         return new CustomerCollection($customers->paginate()->appends($request->query()));
@@ -53,6 +54,12 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer)
     {
+        // Include Related Invoice of customers data if it asked in query parameter V1/customers?includeData=invoices
+        $includeReleated = request()->query('includeData');
+        if ($includeReleated == "invoices") {
+            // Use loadMissing to load invoices if they are not already loaded
+            return new CustomerResource($customer->loadMissing('invoices'));
+        }
         return new CustomerResource($customer);
     }
 
