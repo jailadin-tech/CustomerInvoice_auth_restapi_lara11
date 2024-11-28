@@ -24,6 +24,7 @@ class CustomerResource extends JsonResource
             'city' => $this->city,
             'state' => $this->state,
             'postalCode' => $this->postal_code,
+            'invoicesList' => InvoiceResource::collection($this->whenLoaded('invoices')) // whenLoaded accepts the name of the relationship instead of the relationship itself
         ];
     }
 

@@ -21,16 +21,15 @@ class CustomerController extends Controller
     {
         $filterItems = new CustomerQueryFilter();
         $queryItems = $filterItems->transform($request); // O/p: [['name','=','jai'],['amount','>','100']]
-        if (count($queryItems) == 0) {
-            return new CustomerCollection(Customer::paginate());
-        } else {
-            $customers = Customer::where($queryItems)->paginate();
-            /*  Query debugging
-                $query = Customer::where($queryItems);
-                // Output the query and the bindings
-                dd(vsprintf(str_replace('?', '%s', $query->toSql()), $query->getBindings();)); */
-            return new CustomerCollection($customers->appends($request->query())); // appending query param to pagination url
+        $customers = Customer::where($queryItems);
+
+        // Include Related Invoice of customers data if it asked in query parameter V1/customers?includeData=invoices
+        $includeReleated = $request->query('includeData');
+        if ($includeReleated == "invoices") {
+            // set eagarLoad to invoices, to load the invoices relation ship on customer model 
+            $customers = $customers->with('invoices');
         }
+        return new CustomerCollection($customers->paginate()->appends($request->query()));
     }
 
     /**
