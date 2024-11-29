@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Filter\V1\InvoiceQueryFilter;
+use App\Helper\Api\ResponseHelper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BulkStoreInvoiceRequest;
 use App\Models\Invoice;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Http\Resources\V1\InvoiceCollection;
 use App\Http\Resources\V1\InvoiceResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class InvoiceController extends Controller
 {
@@ -30,14 +33,6 @@ class InvoiceController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreInvoiceRequest $request)
@@ -53,12 +48,21 @@ class InvoiceController extends Controller
         return new InvoiceResource($invoice);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Invoice $invoice)
+    public function bulkStore(BulkStoreInvoiceRequest $request)
     {
-        //
+        try {
+            // Remove the unwanted extra manipulated api keys
+            $bulk = collect($request->all())->map(function ($arr, $key) {
+                return Arr::except($arr, ['customerId', 'billedDate', 'paidDate']);
+            });
+            $store = Invoice::insert($bulk->toArray());
+            if ($store) {
+                return ResponseHelper::success(message: "Bulk data store completed", statusCode: 400);
+            }
+            return ResponseHelper::error(message: "Bulk failed  ", statusCode: 400);
+        } catch (\Throwable $th) {
+            return ResponseHelper::error(message: "Failed to bulk data store due to some exception : " . $th->getMessage(),  statusCode: 400);
+        }
     }
 
     /**

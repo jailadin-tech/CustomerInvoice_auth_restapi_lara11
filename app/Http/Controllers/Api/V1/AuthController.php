@@ -57,9 +57,13 @@ class AuthController extends Controller
             }
             $user = Auth::user();
             if ($user) {
-                $token = $user->createToken('MyApiToken', ['B', 'I', 'P'])->plainTextToken;
-                $authuser = ['user' => $user, 'token' => $token];
-                return ResponseHelper::success(message: 'User Logged successfuly!', data: $authuser, statusCode: 200);
+                $adminToken = $user->createToken('adminToken', ['create', 'Update', 'Delete'])->plainTextToken;
+                $updateToken = $user->createToken('updateToken', ['create', 'Update', 'Delete'])->plainTextToken;
+                $basicToken = $user->createToken('basicToken', ['none'])->plainTextToken;
+                $tokens = ['adminToken' => $adminToken, 'updateToken' => $updateToken, 'basicToken' => $basicToken];
+                $authData = ['user' => $user, 'auth_tokens' => $tokens];
+
+                return ResponseHelper::success(message: 'User Logged successfuly!', data: $authData, statusCode: 200);
             }
             return ResponseHelper::error(message: 'User registeration Failed!', statusCode: 400);
         } catch (Exception $e) {

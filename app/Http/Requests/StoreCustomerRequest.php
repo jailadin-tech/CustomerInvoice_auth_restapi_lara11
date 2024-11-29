@@ -12,6 +12,11 @@ class StoreCustomerRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        $user = $this->user();
+        if (!isset($user) || !$user->tokenCan('create')) {
+            abort(403, 'You are not authorized to perform this action.');
+        }
+
         return true;
     }
 

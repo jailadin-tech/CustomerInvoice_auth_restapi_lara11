@@ -15,7 +15,8 @@ Route::controller(AuthController::class)->group(function () {
     Route::get('logout', 'userLogout')->name('apilogout')->middleware('auth:sanctum');
 });
 
-Route::group(['prefix' => 'V1'], function () {
+Route::group(['prefix' => 'V1', 'middleware' => ['auth:sanctum']], function () {
     Route::apiResource('customers', CustomerController::class); // apiResource like Resource but this avoid the create & edit methods for apis
     Route::apiResource('invoices', InvoiceController::class);
+    Route::post('bulkInvoicesStore', [InvoiceController::class, 'bulkStore']);
 });
